@@ -11,7 +11,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static('public')); // Serve static files from public folder
 
 // MongoDB Connection - Railway Database
 mongoose.connect('mongodb://mongo:SjcxnbuuQYROeBiUAQlroSzNjTxnmptj@caboose.proxy.rlwy.net:14659', {
@@ -423,7 +423,49 @@ app.post('/api/admin/give-coins', authenticateToken, isAdmin, async (req, res) =
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3000;
+
+// Root route - Serve index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// API status route
+app.get('/api', (req, res) => {
+    res.json({
+        message: '🚀 Suzuku V3 Backend API',
+        status: 'Running',
+        version: '1.0.0',
+        port: PORT,
+        endpoints: {
+            auth: {
+                signup: 'POST /api/auth/signup',
+                login: 'POST /api/auth/login',
+                me: 'GET /api/auth/me'
+            },
+            coins: {
+                watchAd: 'POST /api/coins/watch-ad',
+                balance: 'GET /api/coins/balance'
+            },
+            shop: {
+                tools: 'GET /api/shop/tools',
+                purchase: 'POST /api/shop/purchase/:toolId',
+                myTools: 'GET /api/shop/my-tools'
+            },
+            admin: {
+                users: 'GET /api/admin/users',
+                stats: 'GET /api/admin/stats',
+                createTool: 'POST /api/admin/tools',
+                updateTool: 'PUT /api/admin/tools/:id',
+                deleteTool: 'DELETE /api/admin/tools/:id',
+                giveCoins: 'POST /api/admin/give-coins'
+            }
+        }
+    });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📡 Frontend: http://localhost:${PORT}`);
+    console.log(`📡 API: http://localhost:${PORT}/api`);
 });
