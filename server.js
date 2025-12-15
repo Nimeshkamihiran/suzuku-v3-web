@@ -61,7 +61,7 @@ const adWatchSchema = new mongoose.Schema({
 const AdWatch = mongoose.model('AdWatch', adWatchSchema);
 
 // JWT Secret
-const JWT_SECRET = 'your-secret-key-change-this-in-production';
+const JWT_SECRET = '5490bee18549acf01283e250ce42639516302897b6ba1805301f23d867c67add5eaffc7cbb0d69070fe32f576568fdcb22b59352a3d840acc40c111daf22afd4';
 
 // Auth Middleware
 const authenticateToken = (req, res, next) => {
