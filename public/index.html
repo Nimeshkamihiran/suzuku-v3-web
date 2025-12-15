@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suzuku V3 - Advanced Bot Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .neural-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at top, #0a0a1a 0%, #000 100%);
+            z-index: 0;
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridScroll 20s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes gridScroll {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00ffff, #0066ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 10px 25px;
+            background: transparent;
+            border: 2px solid #00ffff;
+            border-radius: 25px;
+            color: #00ffff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .coin-display {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            display: none;
+        }
+
+        /* Pages Container */
+        .page {
+            display: none;
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            padding: 100px 40px 40px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Auth Pages */
+        .auth-container {
+            max-width: 450px;
+            margin: 50px auto;
+            background: rgba(10, 10, 26, 0.8);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 50px 40px;
+        }
+
+        .auth-title {
+            font-size: 32px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #00ffff, #0066ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            color: #fff;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00ffff;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #00ffff, #0066ff);
+            border: none;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.4);
+        }
+
+        .link-text {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .link-text a {
+            color: #00ffff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.error {
+            background: rgba(255, 50, 50, 0.1);
+            border: 1px solid rgba(255, 50, 50, 0.3);
+            color: #ff5555;
+        }
+
+        .alert.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        /* Dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 255, 255, 0.2);
+        }
+
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .card-description {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 20px;
+        }
+
+        .card-button {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            color: #00ffff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .card-button:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+
+        /* Shop */
+        .shop-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .shop-title {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00ffff, #0066ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .tool-price {
+            display: inline-block;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            color: #00ffff;
+            margin: 15px 0;
+        }
+
+        .tool-features {
+            list-style: none;
+            margin: 15px 0;
+            flex-grow: 1;
+        }
+
+        .tool-features li {
+            padding: 8px 0;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .tool-features li:before {
+            content: "✓ ";
+            color: #00ffff;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .owned-badge {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            padding: 8px 16px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        /* Admin Panel */
+        .admin-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #00ffff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 900;
+            color: #00ffff;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            color: #00ffff;
+            font-weight: 700;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            color: #00ffff;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+
+        .action-btn.delete {
+            border-color: #ff5555;
+            color: #ff5555;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(10, 10, 26, 0.95);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #00ffff;
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            cursor: pointer;
+            color: #00ffff;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .page {
+                padding: 150px 20px 40px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-top: 3px solid #00ffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="neural-bg"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">SUZUKU V3</div>
+        <div class="nav-links" id="navLinks">
+            <div class="coin-display" id="coinDisplay">🪙 0 Coins</div>
+            <button class="nav-btn" onclick="showPage('login')">Login</button>
+            <button class="nav-btn" onclick="showPage('signup')">Sign Up</button>
+        </div>
+    </nav>
+
+    <!-- Login Page -->
+    <div class="page active" id="loginPage">
+        <div class="auth-container">
+            <div class="auth-title">Welcome Back</div>
+            <div class="auth-subtitle">Login to your account</div>
+            
+            <div class="alert error" id="loginError"></div>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary">Login</button>
+            </form>
+            
+            <div class="link-text">
+                Don't have an account? <a onclick="showPage('signup')">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Page -->
+    <div class="page" id="signupPage">
+        <div class="auth-container">
+            <div class="auth-title">Create Account</div>
+            <div class="auth-subtitle">🎁 Get 100 coins as signup bonus!</div>
+            
+            <div class="alert error" id="signupError"></div>
+            
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signupUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" required minlength="6">
+                </div>
+                <button type="submit" class="btn-primary">Create Account</button>
+            </form>
+            
+            <div class="link-text">
+                Already have an account? <a onclick="showPage('login')">Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div class="page" id="dashboardPage">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <h1 style="font-size: 48px; margin-bottom: 10px; text-align: center;">Welcome, <span id="username"></span>!</h1>
+            <p style="text-align: center; color: rgba(255,255,255,0.6); margin-bottom: 50px;">Your coins: <span id="dashCoins" style="color: #00ffff; font-weight: 700;">0</span> 🪙</p>
+            
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-icon">🛒</div>
+                    <div class="card-title">Shop</div>
+                    <div class="card-description">Browse and purchase tools with your coins</div>
+                    <button class="card-button" onclick="showPage('shop')">Visit Shop</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">📺</div>
+                    <div class="card-title">Watch Ads</div>
+                    <div class="card-description">Earn 10 coins by watching advertisements</div>
+                    <button class="card-button" onclick="watchAd()">Watch Ad</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">🎁</div>
+                    <div class="card-title">My Tools</div>
+                    <div class="card-description">View your purchased tools and downloads</div>
+                    <button class="card-button" onclick="showPage('mytools')">View Tools</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">🤖</div>
+                    <div class="card-title">Connect Bot</div>
+                    <div class="card-description">Connect to WhatsApp bot</div>
+                    <button class="card-button" onclick="connectBot()">Connect Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Page -->
+    <div class="page" id="shopPage">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <div class="shop-header">
+                <div class="shop-title">Tool Shop</div>
+                <p style="color: rgba(255,255,255,0.6);">Purchase premium tools with coins</p>
+            </div>
+            
+            <div class="dashboard-grid" id="shopGrid">
+                <!-- Tools will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- My Tools Page -->
+    <div class="page" id="mytoolsPage">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <div class="shop-header">
+                <div class="shop-title">My Tools</div>
+                <p style="color: rgba(255,255,255,0.6);">Your purchased tools</p>
+            </div>
+            
+            <div class="dashboard-grid" id="mytoolsGrid">
+                <!-- Purchased tools will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Page -->
+    <div class="page" id="adminPage">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <h1 style="font-size: 48px; margin-bottom: 40px; text-align: center; color: #00ffff;">Admin Panel</h1>
+            
+            <!-- Stats -->
+            <div class="admin-section">
+                <div class="section-title">Statistics</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalUsers">0</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalTools">0</div>
+                        <div class="stat-label">Total Tools</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalPurchases">0</div>
+                        <div class="stat-label">Total Purchases</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalAds">0</div>
+                        <div class="stat-label">Ads Watched</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users -->
+            <div class="admin-section">
+                <div class="section-title">Users</div>
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Coins</th>
+                            <th>Admin</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Tools -->
+            <div class="admin-section">
+                <div class="section-title">
+                    Tools Management
+                    <button class="action-btn" onclick="showAddToolModal()" style="float: right;">+ Add Tool</button>
+                </div>
+                <table id="toolsTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Category</th>
+                            <th>Sales</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Tool Modal -->
+    <div class="modal" id="toolModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div class="modal-title">Add New Tool</div>
+            
+            <form id="toolForm" onsubmit="saveTool(event)">
+                <input type="hidden" id="toolId">
+                <div class="form-group">
+                    <label>Tool Name</label>
+                    <input type="text" id="toolName" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="toolDescription" required>
+                </div>
+                <div class="form-group">
+                    <label>Price (Coins)</label>
+                    <input type="number" id="toolPrice" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="toolCategory" required>
+                </div>
+                <div class="form-group">
+                    <label>Icon (Emoji)</label>
+                    <input type="text" id="toolIcon" value="🛠️">
+                </div>
+                <div class="form-group">
+                    <label>Features (comma separated)</label>
+                    <input type="text" id="toolFeatures" placeholder="Feature 1, Feature 2, Feature 3">
+                </div>
+                <div class="form-group">
+                    <label>Download Link</label>
+                    <input type="url" id="toolDownloadLink">
+                </div>
+                <button type="submit" class="btn-primary">Save Tool</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - CHANGE THIS TO YOUR BACKEND URL
+        const API_URL = 'http://localhost:5000/api';
+        
+        // Ad Links Array
+        const adLinks = [
+            'https://www.example-ad1.com',
+            'https://www.example-ad2.com',
+            'https://www.example-ad3.com',
+            'https://www.example-ad4.com',
+            'https://www.example-ad5.com'
+        ];
+
+        // State
+        let currentUser = null;
+        let authToken = null;
+
+        // Initialize
+        window.onload = () => {
+            checkAuth();
+        };
+
+        // Check Authentication
+        function checkAuth() {
+            authToken = localStorage.getItem('token');
+            if (authToken) {
+                fetchCurrentUser();
+            }
+        }
+
+        // Fetch Current User
+        async function fetchCurrentUser() {
+            try {
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.user;
+                    updateNavigation();
+                    showPage('dashboard');
+                } else {
+                    logout();
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                logout();
+            }
+        }
+
+        // Update Navigation
+        function updateNavigation() {
+            const navLinks = document.getElementById('navLinks');
+            const coinDisplay = document.getElementById('coinDisplay');
+            
+            if (currentUser) {
+                coinDisplay.style.display = 'block';
+                coinDisplay.textContent = `🪙 ${currentUser.coins} Coins`;
+                
+                navLinks.innerHTML = `
+                    <div class="coin-display">🪙 ${currentUser.coins} Coins</div>
+                    <button class="nav-btn" onclick="showPage('dashboard')">Dashboard</button>
+                    <button class="nav-btn" onclick="showPage('shop')">Shop</button>
+                    ${currentUser.isAdmin ? '<button class="nav-btn" onclick="showPage(\'admin\')">Admin</button>' : ''}
+                    <button class="nav-btn" onclick="logout()">Logout</button>
+                `;
+            } else {
+                navLinks.innerHTML = `
+                    <button class="nav-btn" onclick="showPage('login')">Login</button>
+                    <button class="nav-btn" onclick="showPage('signup')">Sign Up</button>
+                `;
+            }
+        }
+
+        // Show Page
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageName + 'Page').classList.add('active');
+            
+            if (pageName === 'dashboard' && currentUser) {
+                document.getElementById('username').textContent = currentUser.username;
+                document.getElementById('dashCoins').textContent = currentUser.coins;
+            } else if (pageName === 'shop' && currentUser) {
+                loadShop();
+            } else if (pageName === 'mytools' && currentUser) {
+                loadMyTools();
+            } else if (pageName === 'admin' && currentUser && currentUser.isAdmin) {
+                loadAdminData();
+            }
+        }
+
+        // Handle Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    authToken = data.token;
+                    currentUser = data.user;
+                    updateNavigation();
+                    showPage('dashboard');
+                } else {
+                    showAlert('loginError', data.error);
+                }
+            } catch (error) {
+                showAlert('loginError', 'Connection error. Please check if backend is running.');
+            }
+        }
+
+        // Handle Signup
+        async function handleSignup(e) {
+            e.preventDefault();
+            const username = document.getElementById('signupUsername').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    authToken = data.token;
+                    currentUser = data.user;
+                    updateNavigation();
+                    showPage('dashboard');
+                } else {
+                    showAlert('signupError', data.error);
+                }
+            } catch (error) {
+                showAlert('signupError', 'Connection error. Please check if backend is running.');
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            authToken = null;
+            currentUser = null;
+            updateNavigation();
+            showPage('login');
+        }
+
+        // Watch Ad
+        async function watchAd() {
+            // Open random ad
+            const randomAd = adLinks[Math.floor(Math.random() * adLinks.length)];
+            window.open(randomAd, '_blank');
+            
+            // Wait 3 seconds then give coins
+            setTimeout(async () => {
+                try {
+                    const response = await fetch(`${API_URL}/coins/watch-ad`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        currentUser.coins = data.totalCoins;
+                        updateNavigation();
+                        alert(`✅ ${data.coinsEarned} coins earned! Total: ${data.totalCoins} coins`);
+                    } else {
+                        alert('❌ ' + data.error);
+                    }
+                } catch (error) {
+                    alert('Error earning coins');
+                }
+            }, 3000);
+        }
+
+        // Load Shop
+        async function loadShop() {
+            try {
+                const response = await fetch(`${API_URL}/shop/tools`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                const grid = document.getElementById('shopGrid');
+                
+                if (data.success && data.tools.length > 0) {
+                    grid.innerHTML = data.tools.map(tool => `
+                        <div class="tool-card">
+                            <div class="card-icon">${tool.icon}</div>
+                            <div class="card-title">${tool.name}</div>
+                            <div class="card-description">${tool.description}</div>
+                            <div class="tool-price">💰 ${tool.price} Coins</div>
+                            <ul class="tool-features">
+                                ${tool.features ? tool.features.map(f => `<li>${f}</li>`).join('') : ''}
+                            </ul>
+                            ${tool.owned ? 
+                                '<div class="owned-badge">✓ Owned</div>' : 
+                                `<button class="card-button" onclick="purchaseTool('${tool._id}')">Purchase</button>`
+                            }
+                        </div>
+                    `).join('');
+                } else {
+                    grid.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.6);">No tools available</p>';
+                }
+            } catch (error) {
+                console.error('Error loading shop:', error);
+            }
+        }
+
+        // Purchase Tool
+        async function purchaseTool(toolId) {
+            if (!confirm('Are you sure you want to purchase this tool?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/shop/purchase/${toolId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentUser.coins = data.remainingCoins;
+                    updateNavigation();
+                    alert('✅ Purchase successful!');
+                    loadShop();
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            } catch (error) {
+                alert('Error purchasing tool');
+            }
+        }
+
+        // Load My Tools
+        async function loadMyTools() {
+            try {
+                const response = await fetch(`${API_URL}/shop/my-tools`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                const grid = document.getElementById('mytoolsGrid');
+                
+                if (data.success && data.tools.length > 0) {
+                    grid.innerHTML = data.tools.map(tool => `
+                        <div class="tool-card">
+                            <div class="card-icon">${tool.icon}</div>
+                            <div class="card-title">${tool.name}</div>
+                            <div class="card-description">${tool.description}</div>
+                            <ul class="tool-features">
+                                ${tool.features ? tool.features.map(f => `<li>${f}</li>`).join('') : ''}
+                            </ul>
+                            ${tool.downloadLink ? 
+                                `<button class="card-button" onclick="window.open('${tool.downloadLink}', '_blank')">Download</button>` :
+                                '<button class="card-button" disabled>No Download Available</button>'
+                            }
+                        </div>
+                    `).join('');
+                } else {
+                    grid.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.6);">You haven\'t purchased any tools yet</p>';
+                }
+            } catch (error) {
+                console.error('Error loading tools:', error);
+            }
+        }
+
+        // Load Admin Data
+        async function loadAdminData() {
+            try {
+                // Load Stats
+                const statsRes = await fetch(`${API_URL}/admin/stats`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const statsData = await statsRes.json();
+                
+                if (statsData.success) {
+                    document.getElementById('totalUsers').textContent = statsData.stats.totalUsers;
+                    document.getElementById('totalTools').textContent = statsData.stats.totalTools;
+                    document.getElementById('totalPurchases').textContent = statsData.stats.totalPurchases;
+                    document.getElementById('totalAds').textContent = statsData.stats.totalAdsWatched;
+                }
+                
+                // Load Users
+                const usersRes = await fetch(`${API_URL}/admin/users`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const usersData = await usersRes.json();
+                
+                if (usersData.success) {
+                    const tbody = document.querySelector('#usersTable tbody');
+                    tbody.innerHTML = usersData.users.map(user => `
+                        <tr>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.coins}</td>
+                            <td>${user.isAdmin ? '✓' : '✗'}</td>
+                            <td>
+                                <button class="action-btn" onclick="giveCoins('${user._id}')">Give Coins</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+                
+                // Load Tools
+                const toolsRes = await fetch(`${API_URL}/shop/tools`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const toolsData = await toolsRes.json();
+                
+                if (toolsData.success) {
+                    const tbody = document.querySelector('#toolsTable tbody');
+                    tbody.innerHTML = toolsData.tools.map(tool => `
+                        <tr>
+                            <td>${tool.icon} ${tool.name}</td>
+                            <td>${tool.price}</td>
+                            <td>${tool.category}</td>
+                            <td>${tool.purchaseCount}</td>
+                            <td>
+                                <button class="action-btn" onclick="editTool('${tool._id}')">Edit</button>
+                                <button class="action-btn delete" onclick="deleteTool('${tool._id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+            }
+        }
+
+        // Give Coins
+        async function giveCoins(userId) {
+            const amount = prompt('Enter amount of coins to give:');
+            if (!amount || isNaN(amount)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/admin/give-coins`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId, amount: parseInt(amount) })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Coins added successfully!');
+                    loadAdminData();
+                }
+            } catch (error) {
+                alert('Error giving coins');
+            }
+        }
+
+        // Show Add Tool Modal
+        function showAddToolModal() {
+            document.getElementById('toolForm').reset();
+            document.getElementById('toolId').value = '';
+            document.querySelector('.modal-title').textContent = 'Add New Tool';
+            document.getElementById('toolModal').classList.add('active');
+        }
+
+        // Edit Tool
+        async function editTool(toolId) {
+            try {
+                const response = await fetch(`${API_URL}/shop/tools`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                const tool = data.tools.find(t => t._id === toolId);
+                
+                if (tool) {
+                    document.getElementById('toolId').value = tool._id;
+                    document.getElementById('toolName').value = tool.name;
+                    document.getElementById('toolDescription').value = tool.description;
+                    document.getElementById('toolPrice').value = tool.price;
+                    document.getElementById('toolCategory').value = tool.category;
+                    document.getElementById('toolIcon').value = tool.icon;
+                    document.getElementById('toolFeatures').value = tool.features ? tool.features.join(', ') : '';
+                    document.getElementById('toolDownloadLink').value = tool.downloadLink || '';
+                    document.querySelector('.modal-title').textContent = 'Edit Tool';
+                    document.getElementById('toolModal').classList.add('active');
+                }
+            } catch (error) {
+                alert('Error loading tool');
+            }
+        }
+
+        // Save Tool
+        async function saveTool(e) {
+            e.preventDefault();
+            
+            const toolId = document.getElementById('toolId').value;
+            const toolData = {
+                name: document.getElementById('toolName').value,
+                description: document.getElementById('toolDescription').value,
+                price: parseInt(document.getElementById('toolPrice').value),
+                category: document.getElementById('toolCategory').value,
+                icon: document.getElementById('toolIcon').value,
+                features: document.getElementById('toolFeatures').value.split(',').map(f => f.trim()).filter(f => f),
+                downloadLink: document.getElementById('toolDownloadLink').value
+            };
+            
+            try {
+                const url = toolId ? `${API_URL}/admin/tools/${toolId}` : `${API_URL}/admin/tools`;
+                const method = toolId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(toolData)
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Tool saved successfully!');
+                    closeModal();
+                    loadAdminData();
+                }
+            } catch (error) {
+                alert('Error saving tool');
+            }
+        }
+
+        // Delete Tool
+        async function deleteTool(toolId) {
+            if (!confirm('Are you sure you want to delete this tool?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/admin/tools/${toolId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Tool deleted successfully!');
+                    loadAdminData();
+                }
+            } catch (error) {
+                alert('Error deleting tool');
+            }
+        }
+
+        // Close Modal
+        function closeModal() {
+            document.getElementById('toolModal').classList.remove('active');
+        }
+
+        // Connect Bot
+        function connectBot() {
+            window.open('https://nenoo-791fc067c67c.herokuapp.com', '_blank');
+        }
+
+        // Show Alert
+        function showAlert(elementId, message) {
+            const alert = document.getElementById(elementId);
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
