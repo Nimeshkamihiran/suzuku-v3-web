@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.static('public')); // Serve static files from public folder
 
 // MongoDB Connection - Railway Database
-mongoose.connect('mongodb://mongo:aSVlekrzldYLBOyTjVZlWqJMQUbSlPsQ@mainline.proxy.rlwy.net:41784', {
+mongoose.connect('mongodb://mongo:wuXWdBrtlFiSvkRemCVGKbQnuDFkqyUy@ballast.proxy.rlwy.net:30839', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log('✅ MongoDB Connected to Railway'))
